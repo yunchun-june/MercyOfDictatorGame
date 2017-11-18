@@ -1,1 +1,1 @@
-# MercyOfDictatorGame
+ChineseDrinkingGame
