@@ -10,16 +10,13 @@ try
     totalTrials         = 3;
     practiceTrials      = 15;
     
-    choiceTime          = 5;
-    guessSumTime        = 5;
-    showResultTime      = 3;
+    moneyTime           = 5;
+    guessTime1          = 5;
+    guessTime2          = 5;
+    showResultTime      = 5;
     fixationTime        = 1;
-    pointPerWin         = 10;
     
     %===== Constants =====%
-    MARKET_BASELINE     = 1;
-    MARKET_BUBBLE       = 2;
-    MARKET_BURST        = 3;
     TRUE                = 1;
     FALSE               = 0;
     
@@ -59,7 +56,8 @@ try
 
     fprintf('---Starting Experiment---\n');
     inputDeviceName     = 'Mac';
-    displayerOn         = FALSE;
+    if(strcmp(rule,'player1')) displayerOn = TRUE;
+    else displayerOn = FALSE;end
     screenID            = 0;
     
     %===== Initialize Componets =====%
@@ -70,15 +68,15 @@ try
     %===== Establish Connection =====% 
     cnt = connector(rule,myID, oppID,myIP,myPort,oppIP,oppPort);
     cnt.establish(myID,oppID);
-    %ListenChar(2);
-    %HideCursor();
+    ListenChar(2);
+    HideCursor();
     
     %===== Open Screen =====% 
-    %fprintf('Start after 10 seconds\n');
+    fprintf('Start after 10 seconds\n');
     %WaitSecs(10);
     displayer.openScreen();
     
-    displayer.writeMessage('Do not touch any key','Wait for instructions');
+    displayer.writeMessage('Press space to start','');
     fprintf('Press Space to start.\n');
     keyboard.waitSpacePress();
     displayer.blackScreen();
@@ -91,7 +89,7 @@ try
     %displayer.blackScreen();
     
     %reinitialized components
-    data        = dataHandler(myID,oppID,rule,totalTrials,pointPerWin);
+    data        = dataHandler(myID,oppID,rule,totalTrials);
     
     for trial = 1:totalTrials
 
@@ -108,33 +106,243 @@ try
         end
         
         %response to get
-        myRes.choice = 0;
-        myRes.guess  = 0;
-        myRes.events = cell(0,2);
+        myRes.youAreDictator = randi(2)-1;
+        myRes.keepMoney  = 5;
+        myRes.givenMoney = 5;
+        if ~myRes.youAreDictator
+            myRes.keepMoney  = randi(10);
+            myRes.givenMoney = 10-myRes.keepMoney;
+        end
+        myRes.s1 = 4;
+        myRes.s2 = 4;
+        myRes.s3 = 4;
         
         %=========== Fixation ==============%
         displayer.fixation(fixationTime);
        
-        %========== Make Decision ===============%
-    
-        %get choice 1-3
-        myRes.choice = input('Your choice (1-3): ','s');
-        myRes.choice = str2num(myRes.choice);
-        assert(myRes.choice >= 1 && myRes.choice <= 3);
-        %get guess 2-6
-        myRes.guess = input('Your choice (2-6): ','s');
-        myRes.guess = str2num(myRes.guess);
-        assert(myRes.guess >= 2 && myRes.guess <= 6);
+        %========== Allocate Money ===============%
+        myRes.state  = 'allocate';
+        startTime = GetSecs();
+        decisionMade = FALSE;
+        if myRes.youAreDictator
+            fprintf('Please Allocate money.\n');
+            for elapse = 1:moneyTime
+                remaining = moneyTime-elapse+1;
+                endOfThisSecond = startTime+elapse;
+                fprintf('remaining time: %d\n',remaining);
+                displayer.decideScreen(myRes,remaining,decisionMade);
+
+                while(GetSecs()<endOfThisSecond)
+                    if ~decisionMade
+                       [keyName,timing] = keyboard.getResponse(endOfThisSecond);
+                       if(strcmp(keyName,'na'))
+                           continue;
+                       else
+                           if(strcmp(keyName,'confirm'))
+                                decisionMade = TRUE;
+                                fprintf('confirmed. you keep : %d\n',myRes.keepMoney);
+                                displayer.decideScreen(myRes,remaining,decisionMade);
+                           end
+
+                           if strcmp(keyName,'quitkey')
+                                displayer.closeScreen();
+                                ListenChar();
+                                fprintf('---- MANUALLY STOPPED ----\n');
+                                return;
+                           end
+
+                           if strcmp(keyName,'up') && myRes.keepMoney<10
+                                myRes.keepMoney  = myRes.keepMoney+1;
+                                myRes.givenMoney = myRes.givenMoney-1;
+                                displayer.decideScreen(myRes,remaining,decisionMade);
+                                return;
+                           end
+                           
+                           if strcmp(keyName,'down') && myRes.keepMoney>0
+                                myRes.keepMoney  = myRes.keepMoney -1;
+                                myRes.givenMoney = myRes.givenMoney+1;
+                                displayer.decideScreen(myRes,remaining,decisionMade);
+                                return;
+                           end
+                       end
+                    end
+                end
+            end
+            displayer.decideScreen(myRes,0,decisionMade);
+        else
+            fprintf('Waiting for dictator to allocate\n');
+            for elapse = 1:moneyTime
+                remaining = moneyTime-elapse+1;
+                endOfThisSecond = startTime+elapse;
+                fprintf('remaining time: %d\n',remaining);
+                while(GetSecs()<endOfThisSecond)
+                    displayer.decideScreen(myRes,remaining,decisionMade);
+                end
+            end
+            displayer.decideScreen(myRes,0,decisionMade);
+        end
+   
+        %========== Guess1 ===============%
+        myRes.state  = 'guess1';
+        startTime = GetSecs();
+        decisionMade = FALSE;
+        if myRes.youAreDictator
+            fprintf('Please Guess how many heart they give you\n');
+            for elapse = 1:guessTime1
+                remaining = guessTime1-elapse+1;
+                endOfThisSecond = startTime+elapse;
+                fprintf('remaining time: %d\n',remaining);
+                displayer.decideScreen(myRes,remaining,decisionMade);
+
+                while(GetSecs()<endOfThisSecond)
+                    if ~decisionMade
+                       [keyName,timing] = keyboard.getResponse(endOfThisSecond);
+                       if(strcmp(keyName,'na'))
+                           continue;
+                       else
+                           if(strcmp(keyName,'confirm'))
+                                decisionMade = TRUE;
+                                fprintf('confirmed. You rate: %d\n',myRes.s2);
+                                displayer.decideScreen(myRes,remaining,decisionMade);
+                           end
+
+                           if strcmp(keyName,'quitkey')
+                                displayer.closeScreen();
+                                ListenChar();
+                                fprintf('---- MANUALLY STOPPED ----\n');
+                                return;
+                           end
+
+                           if strcmp(keyName,'up') && myRes.s2<7
+                                myRes.s2  = myRes.s2+1;
+                                displayer.decideScreen(myRes,remaining,decisionMade);
+                                return;
+                           end
+                           
+                           if strcmp(keyName,'down') && myRes.s2>0
+                                myRes.s2  = myRes.s2 -1;
+                                displayer.decideScreen(myRes,remaining,decisionMade);
+                                return;
+                           end
+                       end
+                    end
+                end
+            end
+            displayer.decideScreen(myRes,0,decisionMade);
+        else %you are reciever
+            fprintf('Please give hearts to dictator\n');
+            for elapse = 1:guessTime1
+                remaining = guessTime1-elapse+1;
+                endOfThisSecond = startTime+elapse;
+                fprintf('remaining time: %d\n',remaining);
+                displayer.decideScreen(myRes,remaining,decisionMade);
+
+                while(GetSecs()<endOfThisSecond)
+                    if ~decisionMade
+                       [keyName,timing] = keyboard.getResponse(endOfThisSecond);
+                       if(strcmp(keyName,'na'))
+                           continue;
+                       else
+                           if(strcmp(keyName,'confirm'))
+                                decisionMade = TRUE;
+                                fprintf('confirmed. you Rate : %d\n',myRes.s1);
+                                displayer.decideScreen(myRes,remaining,decisionMade);
+                           end
+
+                           if strcmp(keyName,'quitkey')
+                                displayer.closeScreen();
+                                ListenChar();
+                                fprintf('---- MANUALLY STOPPED ----\n');
+                                return;
+                           end
+
+                           if strcmp(keyName,'up') && myRes.s1<7
+                                myRes.s2  = myRes.s1+1;
+                                displayer.decideScreen(myRes,remaining,decisionMade);
+                                return;
+                           end
+                           
+                           if strcmp(keyName,'down') && myRes.s1>0
+                                myRes.s2  = myRes.s1 -1;
+                                displayer.decideScreen(myRes,remaining,decisionMade);
+                                return;
+                           end
+                       end
+                    end
+                end
+            end
+            displayer.decideScreen(myRes,0,decisionMade);
+        end
         
+        %========== Guess2 ===============%
+        myRes.state  = 'guess2';
+        startTime = GetSecs();
+        decisionMade = FALSE;
+        if myRes.youAreDictator
+            fprintf('Waiting for receiver to give score\n');
+            for elapse = 1:guessTime2
+                remaining = guessTime2-elapse+1;
+                endOfThisSecond = startTime+elapse;
+                fprintf('remaining time: %d\n',remaining);
+                while(GetSecs()<endOfThisSecond)
+                    displayer.decideScreen(myRes,remaining,decisionMade);
+                end
+            end
+            displayer.decideScreen(myRes,0,decisionMade);
+        else %you are receiver
+            fprintf('Please Guess dictators guess.\n');
+            for elapse = 1:guessTime2
+                remaining = guessTime2-elapse+1;
+                endOfThisSecond = startTime+elapse;
+                fprintf('remaining time: %d\n',remaining);
+                displayer.decideScreen(myRes,remaining,decisionMade);
+
+                while(GetSecs()<endOfThisSecond)
+                    if ~decisionMade
+                       [keyName,timing] = keyboard.getResponse(endOfThisSecond);
+                       if(strcmp(keyName,'na'))
+                           continue;
+                       else
+                           if(strcmp(keyName,'confirm') && myRes)
+                                decisionMade = TRUE;
+                                fprintf('decision confirmed : %d\n',myRes.s3);
+                                displayer.decideScreen(myRes,remaining,decisionMade);
+                           end
+
+                           if strcmp(keyName,'quitkey')
+                                displayer.closeScreen();
+                                ListenChar();
+                                fprintf('---- MANUALLY STOPPED ----\n');
+                                return;
+                           end
+
+                           if strcmp(keyName,'up') && myRes.s3<=7
+                                myRes.s2  = myRes.s3+1;
+                                displayer.decideScreen(myRes,remaining,decisionMade);
+                                return;
+                           end
+                           
+                           if strcmp(keyName,'down') && myRes.s3 >= 0
+                                myRes.s2  = myRes.s3 -1;
+                                displayer.decideScreen(myRes,remaining,decisionMade);
+                                return;
+                           end
+                       end
+                    end
+                end
+            end
+            displayer.decideScreen(myRes,0,decisionMade);
+        end
+  
         %========== Exchange and Save Data ===============%
         %Get opponent's response
-        oppResRaw = cnt.sendOwnResAndgetOppRes(parser.resToStr(myRes));
-        oppRes = parser.strToRes(oppResRaw);
-        data.updateData(myRes,oppRes,trial);
+        %oppResRaw = cnt.sendOwnResAndgetOppRes(parser.resToStr(myRes));
+        %oppRes = parser.strToRes(oppResRaw);
+        %data.updateData(myRes,oppRes,trial);
         
         %========== Show result ===============%
-        data.logStatus(trial);
-        
+        WaitSecs(3);
+        displayer.blackScreen();
     end
 
     displayer.closeScreen();

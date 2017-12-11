@@ -7,21 +7,15 @@ classdef keyboardHandler < handle
     
     properties (Constant)
         quitkey     = 'ESCAPE';
-        confirm     = 'Return';
-        buy         = 'LeftArrow'; %'LeftArrow';
-        noTrade     = 'DownArrow'; %'DownArrow';
-        sell        = 'RightArrow'; %'RightArrow';
-        see         = 'UpArrow'; %'UpArrow';
+        confirm     = 'space';
+        up          = 'UpArrow';
+        down        = 'DownArrow';
     end
     
     methods
         
         %---- Constructor -----%
         function obj = keyboardHandler(keyboardName)
-            obj.setupKeyboard(keyboardName);
-        end
-        
-        function setupKeyboard(obj,keyboardName)
             if strcmp(keyboardName,'Mac')
                keyboardName = 'Apple Internal Keyboard / Trackpad';
             end
@@ -40,9 +34,6 @@ classdef keyboardHandler < handle
         end
        
         %----- Functions -----%
-        function detected = detectEsc(obj)
-            
-        end
         
         function [keyName, timing] = getResponse(obj,timesUp)
             
@@ -58,36 +49,22 @@ classdef keyboardHandler < handle
                     timing = GetSecs();
                     return;
                 end
-               
-                if press(KbName(obj.buy))
-                    keyName = 'buy';
-                    timing = GetSecs();
-                end
-
-                if press(KbName(obj.noTrade))
-                    keyName = 'no trade';
-                    timing = GetSecs();
-                end
-
-                if press(KbName(obj.sell))
-                    keyName = 'sell';
-                    timing = GetSecs();
-                end
 
                 if press(KbName(obj.confirm))
                     keyName = 'confirm';
                     timing = GetSecs();
                 end
                 
-                if press(KbName(obj.see))
-                    keyName = 'see';
+                if press(KbName(obj.up))
+                    keyName = 'up';
                     timing = GetSecs();
                 end
                 
-                if release(KbName(obj.see))
-                    keyName = 'unsee';
+                if press(KbName(obj.down))
+                    keyName = 'down';
                     timing = GetSecs();
                 end
+                
             end
 
         end
