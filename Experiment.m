@@ -7,7 +7,7 @@ Screen('Preference', 'SkipSyncTests', 1);
 try
     %===== Parameters =====%
 
-    totalTrials         = 3;
+    totalTrials         = 10;
     practiceTrials      = 15;
     
     allocateTime           = 5;
@@ -29,12 +29,13 @@ try
 
     rule = input('Rule(player1/player2): ','s');
     assert( strcmp(rule,'player1')|strcmp(rule,'player2'));
-    if rule == 'player1'
+    if strcmp(rule,'player1')
         myIP = '192.168.1.83';
         oppIP = '192.168.1.42';
         myPort = 5656;
         oppPort = 7878;
-    else
+    end
+    if(strmp(rule,'player2'))
         myIP = '192.168.1.42';
         oppIP = '192.168.1.83';
         myPort = 7878;

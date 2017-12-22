@@ -213,8 +213,8 @@ classdef displayer < handle
         end
         
         function drawHeart(obj,n,xPosi,yPosi)
-            margin = 10;
-            heartSize = 50;
+            margin = 8;
+            heartSize = 40;
             x = ceil(obj.xGrid(xPosi)*obj.width/100);
             y = ceil(obj.yGrid(yPosi)*obj.height/100);
             for i = 1:n
