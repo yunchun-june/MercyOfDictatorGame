@@ -35,7 +35,7 @@ try
         myPort = 5656;
         oppPort = 7878;
     end
-    if(strmp(rule,'player2'))
+    if(strcmp(rule,'player2'))
         myIP = '192.168.1.42';
         oppIP = '192.168.1.83';
         myPort = 7878;
