@@ -163,11 +163,11 @@ classdef displayer < handle
             if strcmp(res.state,'guess1') || strcmp(res.state,'guess2')
                 if res.youAreDictator
                     %8 Score2 @
-                    obj.write('Score given to you:',1,7,'white',30);
+                    obj.write('guess given to you:',1,7,'white',30);
                     obj.drawHeart(res.s2,3,7);
                 else
                     %7 Score1 #
-                    obj.write('Score give to dictator:',1,7,'white',30);
+                    obj.write('Give to dictator:',1,7,'white',30);
                     obj.drawHeart(res.s1,3,7);
                 end
             end
@@ -177,7 +177,7 @@ classdef displayer < handle
                     obj.write('Waiting got for receiver...',1,8,'white',30);
                 else
                 %9 Score3 #
-                    obj.write('Dictator guess:',1,8,'white',30);
+                    obj.write('Guess dictator guess:',1,8,'white',30);
                     obj.drawHeart(res.s3,3,8);
                 end
             end

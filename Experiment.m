@@ -25,13 +25,18 @@ try
     oppID = 'test';
     myIP = 'localhost';
     oppIP = 'localhost';
+    
 
     rule = input('Rule(player1/player2): ','s');
     assert( strcmp(rule,'player1')|strcmp(rule,'player2'));
     if rule == 'player1'
+        myIP = '192.168.1.83';
+        oppIP = '192.168.1.42';
         myPort = 5656;
         oppPort = 7878;
     else
+        myIP = '192.168.1.42';
+        oppIP = '192.168.1.83';
         myPort = 7878;
         oppPort = 5656;
     end
