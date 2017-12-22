@@ -56,12 +56,9 @@ try
 
     fprintf('---Starting Experiment---\n');
     inputDeviceName     = 'Mac';
+    if(strcmp(rule,'player1')) displayerOn = TRUE;
+    else displayerOn = FALSE;end
     screenID            = 0;
-    
-    if(strcmp(rule,'player1')) displayerOn = TRUE; end
-    if(strcmp(rule,'player2')) displayerOn = FALSE; end
-    automode = FALSE;
-    
     
     %===== Initialize Componets =====%
     keyboard    = keyboardHandler(inputDeviceName);
@@ -107,6 +104,8 @@ try
     action{3} = 'confirm';
     action{4} = 'na';
     
+    timing = 3;
+    
     for trial = 1:totalTrials
 
         %=========== Setting Up Trials ==============%
@@ -150,14 +149,9 @@ try
                 displayer.decideScreen(myRes,remaining,decisionMade);
                 while(GetSecs()<endOfThisSecond)
                     if ~decisionMade
-                        
-                       if(automode)
-                           keyName = action{randi(4)};
-                           timing = 3;
-                       else
-                           [keyName,timing] = keyboard.getResponse(endOfThisSecond);
-                       end
+                       %[keyName,timing] = keyboard.getResponse(endOfThisSecond);
                        
+                       keyName = action{randi(4)};
                        if(strcmp(keyName,'na'))
                            continue;
                        else
@@ -231,15 +225,8 @@ try
 
                 while(GetSecs()<endOfThisSecond)
                     if ~decisionMade
-                       
-                       % get respond
-                       if(automode)
-                           keyName = action{randi(4)};
-                           timing = 3;
-                       else
-                           [keyName,timing] = keyboard.getResponse(endOfThisSecond);
-                       end
-                       
+                       [keyName,timing] = keyboard.getResponse(endOfThisSecond);
+                       %keyName = action{randi(4)};
                        if(strcmp(keyName,'na'))
                            continue;
                        else
@@ -263,7 +250,7 @@ try
                                 fprintf('%d heart(s).\n',myRes.s2);
                            end
                            
-                           if strcmp(keyName,'down') && myRes.s2>1
+                           if strcmp(keyName,'down') && myRes.s2>0
                                 myRes.s2  = myRes.s2 -1;
                                 displayer.decideScreen(myRes,remaining,decisionMade);
                                 fprintf('%d heart(s).\n',myRes.s2);
@@ -285,14 +272,8 @@ try
 
                 while(GetSecs()<endOfThisSecond)
                     if ~decisionMade
-                       % get respond
-                       if(automode)
-                           keyName = action{randi(4)};
-                           timing = 3;
-                       else
-                           [keyName,timing] = keyboard.getResponse(endOfThisSecond);
-                       end
-                       
+                       %[keyName,timing] = keyboard.getResponse(endOfThisSecond);
+                       keyName = action{randi(4)};
                        if(strcmp(keyName,'na'))
                            continue;
                        else
@@ -311,15 +292,15 @@ try
                            end
 
                            if strcmp(keyName,'up') && myRes.s1<7
-                                myRes.s1  = myRes.s1+1;
+                                myRes.s2  = myRes.s1+1;
                                 displayer.decideScreen(myRes,remaining,decisionMade);
-                                fprintf('%d heart(s).\n',myRes.s1);
+                                fprintf('%d heart(s).\n',myRes.s2);
                            end
                            
-                           if strcmp(keyName,'down') && myRes.s1>1
-                                myRes.s1  = myRes.s1 -1;
+                           if strcmp(keyName,'down') && myRes.s1>0
+                                myRes.s2  = myRes.s1 -1;
                                 displayer.decideScreen(myRes,remaining,decisionMade);
-                                fprintf('%d heart(s).\n',myRes.s1);
+                                fprintf('%d heart(s).\n',myRes.s2);
                            end
                        end
                     end
@@ -355,15 +336,8 @@ try
 
                 while(GetSecs()<endOfThisSecond)
                     if ~decisionMade
-                        
-                       % get respond
-                       if(automode)
-                           keyName = action{randi(4)};
-                           timing = 3;
-                       else
-                           [keyName,timing] = keyboard.getResponse(endOfThisSecond);
-                       end
-                       
+                       %[keyName,timing] = keyboard.getResponse(endOfThisSecond);
+                       keyName = action{randi(4)};
                        if(strcmp(keyName,'na'))
                            continue;
                        else
@@ -381,14 +355,14 @@ try
                                 return;
                            end
 
-                           if strcmp(keyName,'up') && myRes.s3<7
-                                myRes.s3  = myRes.s3+1;
+                           if strcmp(keyName,'up') && myRes.s3<=7
+                                myRes.s2  = myRes.s3+1;
                                 displayer.decideScreen(myRes,remaining,decisionMade);
                                 fprintf('%d heart(s).\n',myRes.s3);
                            end
                            
-                           if strcmp(keyName,'down') && myRes.s3>1
-                                myRes.s3  = myRes.s3 -1;
+                           if strcmp(keyName,'down') && myRes.s3 >= 0
+                                myRes.s2  = myRes.s3 -1;
                                 displayer.decideScreen(myRes,remaining,decisionMade);
                                 fprintf('%d heart(s).\n',myRes.s3);
                            end

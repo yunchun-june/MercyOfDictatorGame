@@ -70,7 +70,6 @@ classdef keyboardHandler < handle
         end
         
         function waitSpacePress(obj)
-            fprintf('press space to start.\n');
             KbEventFlush();
             [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd);
             while 1

@@ -25,6 +25,7 @@ classdef displayer < handle
         DIMYELLOW = [100 100 0];
         yGrid = [23 29 35 41 47 53 59 65 71 77];
         xGrid = [20 35 50 65 80];
+        heartSize = 60;
     end
     
     methods
@@ -164,11 +165,11 @@ classdef displayer < handle
                 if res.youAreDictator
                     %8 Score2 @
                     obj.write('Score given to you:',1,7,'white',30);
-                    obj.drawHeart(res.s2,3,7);
+                    obj.write(num2str(res.s2),3,7,'white',30);
                 else
                     %7 Score1 #
                     obj.write('Score give to dictator:',1,7,'white',30);
-                    obj.drawHeart(res.s1,3,7);
+                    obj.write(num2str(res.s1),3,7,'white',30);
                 end
             end
             
@@ -178,7 +179,7 @@ classdef displayer < handle
                 else
                 %9 Score3 #
                     obj.write('Dictator guess:',1,8,'white',30);
-                    obj.drawHeart(res.s3,3,8);
+                    obj.write(num2str(res.s3),3,8,'white',30);
                 end
             end
             
@@ -213,14 +214,20 @@ classdef displayer < handle
         end
         
         function drawHeart(obj,n,xPosi,yPosi)
+            w = 5;
+            h = 20;
             margin = 10;
-            heartSize = 50;
+            heartsize = 60;
             x = ceil(obj.xGrid(xPosi)*obj.width/100);
             y = ceil(obj.yGrid(yPosi)*obj.height/100);
             for i = 1:n
-                Screen('DrawTexture', obj.wPtr, obj.heart, [], [x;y;x+heartSize;y+heartSize]);
-                x = x+margin+heartSize;
+                Screen('DrawTexture', obj.wPtr, obj.heart, [], [100;100;160;160]);
+                Screen('FillRect', obj.wPtr, obj.YELLOW, [x,y,x+w,y+h]);
+                x = x+margin;
             end
+            
+            
+            Screen('Flip',obj.wPtr)
         end
 
         

@@ -37,7 +37,7 @@ classdef connector
             data = client(obj.destIP,obj.destPort,timeout);
         end
         
-        % methods
+        %=== Establish connection ===%
         
         function establish(obj,myID,oppID)
             fprintf('-----------------------------\n');
@@ -66,6 +66,8 @@ classdef connector
             fprintf('Connection Established\n');
             fprintf('-----------------------------\n');
         end
+        
+        
 
         function syncTrial(obj,trial)
             if strcmp(obj.rule , 'player1')
@@ -80,7 +82,38 @@ classdef connector
                 obj.send(num2str(trial),-1);
             end
         end
-
+        
+        %=== CondList ===%
+    
+        function sendCondList(obj,listStr)
+            if strcmp(obj.rule , 'player1')
+                fprintf('Sending condition list...\n');
+                obj.send(listStr,-1);
+                fprintf('Condition list sent.\n');
+            end
+        end
+        
+        function condList = getCondList(obj)
+            if strcmp(obj.rule , 'player2')
+                fprintf('Waiting for condition list...\n');
+                condList = obj.fetch(-1);
+                fprintf('Condition list received.\n');
+            end
+        end
+        
+        %=== keep money ===%
+    
+        function sendMoney(obj, money)
+            obj.send(num2str(money),-1);
+        end
+        
+        function money = getMoney(obj)
+            msg = obj.fetch(-1);
+            money = str2num(msg);
+        end
+        
+        %=== Respond ===%
+        
         function oppRes = sendOwnResAndgetOppRes(obj,myResStr)
             fprintf('Sending data...\n');
             if strcmp(obj.rule , 'player1')

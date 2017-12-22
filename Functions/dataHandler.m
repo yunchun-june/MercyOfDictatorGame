@@ -6,10 +6,17 @@ classdef dataHandler <handle
 %   disrupted       3
 %   p1get           4
 %   p2get           5
-%   score1          6 (given to dictator)
-%   score2          7 (dictator's guess)
-%   score3          8 (guess of dictator's guess)    
+%   p1get_dis       6
+%   p2get_dis       7
+%   score1          8  (given to dictator)
+%   score2          9  (dictator's guess)
+%   score3          10 (guess of dictator's guess)
+%   allocate_rt
+%   score1_rt
+%   score2_rt
+%   score3_rt
     
+
     properties
         player1ID
         player2ID
@@ -25,9 +32,13 @@ classdef dataHandler <handle
         p2get            = 5
         p1get_dis        = 6
         p2get_dis        = 7
-        score1           = 8 %(given to dictator)
-        score2           = 9 %(dictator's guess)
+        score1           = 8  %(given to dictator)
+        score2           = 9  %(dictator's guess)
         score3           = 10 %(guess of dictator's guess)
+        allocateRT       = 11
+        s1RT             = 12
+        s2RT             = 13
+        s3RT             = 14
     end
     
     methods
@@ -44,101 +55,109 @@ classdef dataHandler <handle
             
             obj.rule = rule;
             obj.totalTrial = trials;
-            obj.result = cell(trials,10);
+            obj.result = cell(trials,14);
             
-            %make condition list
+            for i = 1:trials
+                obj.result{i,obj.trial_num} = i;
+            end
+            
+        end
+        
+        
+        function gen_condList(obj)
+            trials = obj.totalTrial;
             temp = zeros(trials,10);
-            temp(1:trials/2, obj.dictator) = 1;
-            temp(trials/2+1:trials, obj.dictator) = 2;
-            
+            temp(1:ceil(trials/2), obj.dictator) = 1;
+            temp(ceil(trials/2+1):trials, obj.dictator) = 2;
+
             randomIndex = randperm(trials);
             index = 1;
             for i = randomIndex
                 obj.result{index,obj.dictator} = temp(i,obj.dictator);
-                obj.result{index,obj.trial_num} = index;
                 index = index +1;
             end
         end
         
+        %----- generate condition list -----%
+        
+        function condList = get_condList(obj)
+            condList = zeros(obj.totalTrial,1);
+            for i = 1:obj.totalTrial
+                condList(i,1) = obj.result{i,obj.dictator};
+            end
+        end
+        
+        function set_condList(obj,condList)
+            for i = 1:obj.totalTrial
+                obj.result{i,obj.dictator} = condList(i);
+            end
+        end
+        
         %----- Updating Data -----%
-
+        
+        function res = getDictator(obj,trial)
+            res = '';
+            dictator = obj.result{trial,obj.dictator};
+            if(dictator == 1) res = 'player1'; end
+            if(dictator == 2) res = 'player2'; end
+        end
         
         function updateData(obj,myRes,oppRes,trial)
-          
-            obj.result{trial,1} = trial;
             
-            % p1 p2 choice guess
-            if strcmp(obj.rule , 'player1')
-                obj.result{trial,2} = myRes.choice;
-                obj.result{trial,3} = myRes.guess;
-                obj.result{trial,4} = oppRes.choice;
-                obj.result{trial,5} = oppRes.guess;
-                obj.result{trial,12} = myRes.events;
-                obj.result{trial,13} = oppRes.events;
+%             myRes.youAreDictator = strcmp(rule,data.getDictator(trial));
+%             myRes.keepMoney  = 5;
+%             myRes.givenMoney = 5;
+%             myRes.s1 = 4;
+%             myRes.s2 = 4;
+%             myRes.s3 = 4;
+% 
+%             %data handler respond package
+%             myRes.allocateRT = 0;
+%             myRes.s1RT = 0;
+%             myRes.s2RT = 0;
+%             myRes.s3RT = 0;
+
+        
+            if(myRes.youAreDictator)
+                if(strcmp(obj.rule,'player1'))
+                    obj.result{trial,obj.p1get} = myRes.keepMoney;
+                    obj.result{trial,obj.p2get} = myRes.givenMoney;
+                end
+                                
+                if(strcmp(obj.rule,'player2'))
+                    obj.result{trial,obj.p2get} = myRes.keepMoney;
+                    obj.result{trial,obj.p1get} = myRes.givenMoney;
+                end
+                
+                obj.result{trial,obj.score1} = oppRes.s1;
+                obj.result{trial,obj.score2} = myRes.s2;
+                obj.result{trial,obj.score3} = oppRes.s3;
+                
+                obj.result{trial,obj.allocateRT} = myRes.allocateRT;
+                obj.result{trial,obj.s1RT} = oppRes.s1RT;
+                obj.result{trial,obj.s2RT} = myRes.s2RT;
+                obj.result{trial,obj.s3RT} = oppRes.s3RT;
+                
             end
             
-            if strcmp(obj.rule , 'player2')
-                obj.result{trial,2} = oppRes.choice;
-                obj.result{trial,3} = oppRes.guess;
-                obj.result{trial,4} = myRes.choice;
-                obj.result{trial,5} = myRes.guess;
-                obj.result{trial,12} = oppRes.events;
-                obj.result{trial,13} = myRes.events;
-            end
-            
-            %real sum
-            if(obj.result{trial,2} ~= 0 && obj.result{trial,4} ~= 0)
-                obj.result{trial,6} = obj.result{trial,2} + obj.result{trial,4};
-            else
-                obj.result{trial,6} = 0;
-            end
-            
-            WRONG   = 1;
-            RIGHT   = 2;
-            NONSENSE = 3;
-            
-            %p1 is right
-            if(~obj.resMakeSense(obj.result{trial,obj.p1choice}, obj.result{trial,obj.p1guess}) || obj.result{trial,obj.p1guess} == 0)
-                obj.result{trial,obj.p1IsRight} = NONSENSE;
-            elseif(obj.result{trial,obj.realSum} == obj.result{trial,obj.p1guess})
-                obj.result{trial,obj.p1IsRight} = RIGHT;
-            else
-                obj.result{trial,obj.p1IsRight} = WRONG;
-            end
-            
-            %p2 is right
-            if(~obj.resMakeSense(obj.result{trial,obj.p2choice}, obj.result{trial,obj.p2guess}) || obj.result{trial,obj.p2guess} == 0)
-                obj.result{trial,obj.p2IsRight} = NONSENSE;
-            elseif(obj.result{trial,obj.realSum} == obj.result{trial,obj.p2guess})
-                obj.result{trial,obj.p2IsRight} = RIGHT;
-            else
-                obj.result{trial,obj.p2IsRight} = WRONG;
-            end
-            
-            % set winner
-                                %x  %o  %? player2
-            GET_WINNER    = [   0   2   1; %x player1
-                                1   0   1; %o
-                                2   2   0];%?
-            
-            obj.result{trial,9} = GET_WINNER(obj.result{trial,7},obj.result{trial,8});
-            
-            % update score
-            if(trial == 1)
-                obj.result{trial,10} = 0;
-                obj.result{trial,11} = 0;
-            else
-                obj.result{trial,10} = obj.result{trial-1,10};
-                obj.result{trial,11} = obj.result{trial-1,11};
-            end
-            
-            
-            if( obj.result{trial,9} == 1) % p1 win
-                obj.result{trial,10} = obj.result{trial,10} + obj.gain;
-            end
-            
-            if( obj.result{trial,9} == 2) % p2 win
-                obj.result{trial,11} = obj.result{trial,11} + obj.gain;
+            if(~myRes.youAreDictator)
+                if(strcmp(obj.rule,'player1'))
+                    obj.result{trial,obj.p2get} = myRes.keepMoney;
+                    obj.result{trial,obj.p1get} = myRes.givenMoney;
+                end
+                if(strcmp(obj.rule,'player2'))
+                    obj.result{trial,obj.p1get} = myRes.keepMoney;
+                    obj.result{trial,obj.p2get} = myRes.givenMoney;
+                end
+                
+                obj.result{trial,obj.score1} = myRes.s1;
+                obj.result{trial,obj.score2} = oppRes.s2;
+                obj.result{trial,obj.score3} = myRes.s3;
+                
+                obj.result{trial,obj.allocateRT} = oppRes.allocateRT;
+                obj.result{trial,obj.s1RT} = myRes.s1RT;
+                obj.result{trial,obj.s2RT} = oppRes.s2RT;
+                obj.result{trial,obj.s3RT} = myRes.s3RT;
             end
             
         end
@@ -207,8 +226,8 @@ classdef dataHandler <handle
         
         %----- Writing and Loading -----%
         function saveToFile(obj)
-            result = obj;
-            filename = strcat('./RawData/CDG',datestr(now,'YYmmDD'),'_',datestr(now,'hhMM'),'_',obj.player1ID,'.mat');
+            result = obj.result;
+            filename = strcat('./RawData/MDG',datestr(now,'YYmmDD'),'_',datestr(now,'hhMM'),'_',obj.player1ID,'.mat');
             save(filename,'result');
             fprintf('Data saved to file.\n');
         end
