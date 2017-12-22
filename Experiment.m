@@ -10,9 +10,9 @@ try
     totalTrials         = 10;
     practiceTrials      = 15;
     
-    allocateTime           = 5;
-    guessTime1          = 5;
-    guessTime2          = 5;
+    allocateTime        = 6;
+    guessTime1          = 6;
+    guessTime2          = 6;
     showResultTime      = 5;
     fixationTime        = 1;
     

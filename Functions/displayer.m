@@ -129,61 +129,97 @@ classdef displayer < handle
             
             %2 You are @dictator/ #receiver
             if res.youAreDictator
-                obj.write('You are dictator',1,2,'white',30);
+                obj.write('DICTATOR',1,2,'white',30);
             else
-                obj.write('Your are receiver',1,2,'white',30);
+                obj.write('RECEIVER',1,2,'white',30);
             end
             
             if(strcmp(res.state,'allocate'))
                 if res.youAreDictator
                     %4 Your money       8 @
-                    obj.write('Your money:',1,4,'white',30);
+                    if(confirmed)
+                        obj.write('Your money:',1,4,'grey',30);
+                    else
+                        obj.write('Your money:',1,4,'white',30);
+                    end
+                    
                     obj.write(num2str(res.keepMoney),3,4,'white',30);
 
                     %5 Opp's money      2 @
-                    obj.write('Opp money:',1,5,'white',30);
+                    if(confirmed)
+                        obj.write('Opp money:',1,5,'grey',30);
+                    else
+                        obj.write('Opp money:',1,5,'white',30);
+                    end
+                    
                     obj.write(num2str(res.givenMoney),3,5,'white',30);
+                    
                 else
                     obj.write('Waiting for dictator...',1,4,'white',30);
                 end
             else
                 %4 Your money       8 @
-                    obj.write('Your money:',1,4,'white',30);
+                    obj.write('Your money:',1,4,'grey',30);
                     obj.write(num2str(res.keepMoney),3,4,'white',30);
 
                 %5 Opp's money      2 @
-                    obj.write('Opp money:',1,5,'white',30);
+                    obj.write('Opp money:',1,5,'grey',30);
                     obj.write(num2str(res.givenMoney),3,5,'white',30);
             end
             
             %6 ----------
-            divider = '------------------------------------------------------------';
+            divider = '----------------------------------------------------------------------------------';
             obj.write(divider,1,6,'white',30);
             
-            if strcmp(res.state,'guess1') || strcmp(res.state,'guess2')
+            if strcmp(res.state,'guess1')
                 if res.youAreDictator
                     %8 Score2 @
-                    obj.write('guess given to you:',1,7,'white',30);
+                    if(confirmed)
+                        obj.write('guess given to you:',1,7,'grey',30);
+                    else
+                        obj.write('guess given to you:',1,7,'white',30);
+                    end
                     obj.drawHeart(res.s2,3,7);
                 else
                     %7 Score1 #
-                    obj.write('Give to dictator:',1,7,'white',30);
+                    if(confirmed)
+                        obj.write('Give to dictator:',1,7,'grey',30);
+                    else
+                        obj.write('Give to dictator:',1,7,'white',30);
+                    end
                     obj.drawHeart(res.s1,3,7);
                 end
             end
             
             if strcmp(res.state,'guess2')
                 if res.youAreDictator
+                    %8 Score2 @
+                    obj.write('guess given to you:',1,7,'grey',30);
+                    obj.drawHeart(res.s2,3,7);
+                else
+                    %7 Score1 #
+                    obj.write('Give to dictator:',1,7,'grey',30);
+                    obj.drawHeart(res.s1,3,7);
+                end
+            end
+            
+            
+            if strcmp(res.state,'guess2')
+                if res.youAreDictator
                     obj.write('Waiting got for receiver...',1,8,'white',30);
                 else
                 %9 Score3 #
-                    obj.write('Guess dictator guess:',1,8,'white',30);
+                    if(confirmed)
+                        obj.write('Guess dictator guess:',1,8,'grey',30);
+                    else
+                        obj.write('Guess dictator guess:',1,8,'white',30);
+                    end
                     obj.drawHeart(res.s3,3,8);
                 end
             end
             
             %10      timer
-            obj.drawTimer(timer,3,10);
+            obj.drawTimer(timer,2,10);
             
             Screen('Flip',obj.wPtr);
         end
@@ -194,6 +230,7 @@ classdef displayer < handle
             if strcmp(c,'red') color = obj.RED; end
             if strcmp(c,'green') color = obj.GREEN; end
             if strcmp(c,'yellow') color = obj.YELLOW; end
+            if strcmp(c,'grey') color = obj.GREY; end
 
             Screen('TextSize', obj.wPtr,size);
             Screen('DrawText',obj.wPtr,char(text), ceil(obj.xGrid(x)*obj.width/100), ceil(obj.yGrid(y)*obj.height/100), color);
