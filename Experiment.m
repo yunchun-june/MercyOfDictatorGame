@@ -25,7 +25,6 @@ try
     oppID = 'test';
     myIP = 'localhost';
     oppIP = 'localhost';
-    
 
     rule = input('Rule(player1/player2): ','s');
     assert( strcmp(rule,'player1')|strcmp(rule,'player2'));
@@ -78,8 +77,8 @@ try
     %===== Establish Connection =====% 
     cnt = connector(rule,myID, oppID,myIP,myPort,oppIP,oppPort);
     cnt.establish(myID,oppID);
-    %ListenChar(2);
-    %HideCursor();
+    ListenChar(2);
+    HideCursor();
     
     %===== Open Screen =====% 
     fprintf('Start after 10 seconds\n');
