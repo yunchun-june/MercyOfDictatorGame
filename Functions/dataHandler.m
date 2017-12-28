@@ -193,6 +193,20 @@ classdef dataHandler <handle
             end
         end
         
+        function ans = getScoreByKey(obj,key)
+            key = mod(key,3);
+            if(key == 0) key= 3; end
+            ans = 0;
+            for i = key:3:obj.totalTrial
+                if(strcmp(obj.rule,'player1'))
+                    ans = ans+ obj.result{i,obj.p1get};
+                end
+                if(strcmp(obj.rule,'player2'))
+                    ans = ans+ obj.result{i,obj.p2get};
+                end
+            end
+        end
+        
         function logStatus(obj,trial)
             fprintf('=================================================\n');
             fprintf('Trial          %d\n',trial);
@@ -222,6 +236,7 @@ classdef dataHandler <handle
                 fprintf('Opp Score: %d\n',obj.result{trial,10});
             end
         end
+        
         
         
         %----- Writing and Loading -----%

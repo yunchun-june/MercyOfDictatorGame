@@ -10,6 +10,7 @@ classdef keyboardHandler < handle
         confirm     = 'space';
         up          = 'UpArrow';
         down        = 'DownArrow';
+        numberKey   = {'1!';'2@';'3#';'4$';'5%';'6^';'7&';'8*';'9('};
     end
     
     methods
@@ -65,6 +66,13 @@ classdef keyboardHandler < handle
                     timing = GetSecs();
                 end
                 
+                for toCheck = 1:9
+                    if press(KbName(obj.numberKey{toCheck}))
+                        keyName = num2str(toCheck);
+                        timing = GetSecs();
+                    end
+                end
+                
             end
 
         end
@@ -81,6 +89,20 @@ classdef keyboardHandler < handle
             end
         end
         
+        function flushKbEvent(obj)
+            KbEventFlush();
+        end
+        
+        function result = detectSpacePress(obj)
+            [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd);
+            if firstKeyPressTimes(KbName('space'))
+                fprintf('space is pressed.\n');
+                result = 1;
+            else
+                result  =0;
+            end
+        end
+        
         function waitEscPress(obj)
             KbEventFlush();
             [keyIsDown, firstKeyPressTimes, firstKeyReleaseTimes] = KbQueueCheck(obj.devInd);
@@ -91,6 +113,9 @@ classdef keyboardHandler < handle
                 end
             end
         end
+        
+
+        
     end
     
 end

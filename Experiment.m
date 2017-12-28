@@ -7,7 +7,7 @@ Screen('Preference', 'SkipSyncTests', 1);
 try
     %===== Parameters =====%
 
-    totalTrials         = 10;
+    totalTrials         = 1;
     practiceTrials      = 15;
     
     allocateTime        = 6;
@@ -29,14 +29,14 @@ try
     rule = input('Rule(player1/player2): ','s');
     assert( strcmp(rule,'player1')|strcmp(rule,'player2'));
     if strcmp(rule,'player1')
-        myIP = '192.168.1.83';
-        oppIP = '192.168.1.42';
+        %myIP = '192.168.1.83';
+        %oppIP = '192.168.1.42';
         myPort = 5656;
         oppPort = 7878;
     end
     if(strcmp(rule,'player2'))
-        myIP = '192.168.1.42';
-        oppIP = '192.168.1.83';
+        %myIP = '192.168.1.42';
+        %oppIP = '192.168.1.83';
         myPort = 7878;
         oppPort = 5656;
     end
@@ -142,6 +142,18 @@ try
         %=========== Fixation ==============%
         displayer.fixation(fixationTime);
        
+        %=========== Fixation ==============%
+        
+        if myRes.youAreDictator
+            displayer.writeMessage('DICTATOR','');
+            WaitSecs(2);
+        end
+        
+        if ~myRes.youAreDictator
+            displayer.writeMessage('RECEIVER','');
+            WaitSecs(2);
+        end
+        
         %========== Allocate Money ===============%
         myRes.state  = 'allocate';
         startTime = GetSecs(); 
@@ -179,20 +191,18 @@ try
                                 fprintf('---- MANUALLY STOPPED ----\n');
                                 return;
                            end
-
-                           if strcmp(keyName,'up') && myRes.keepMoney<10
-                                myRes.keepMoney  = myRes.keepMoney+1;
-                                myRes.givenMoney = myRes.givenMoney-1;
+                           
+                           try
+                              keyName = str2num(keyName);
+                              if keyName >= 1 && keyName <=9
+                                myRes.keepMoney  = keyName;
+                                myRes.givenMoney = 10 - myRes.keepMoney;
                                 displayer.decideScreen(myRes,remaining,decisionMade);
                                 fprintf('keep: %d$ give: %d$\n',myRes.keepMoney, myRes.givenMoney);
+                              end 
+                           catch
                            end
                            
-                           if strcmp(keyName,'down') && myRes.keepMoney>0
-                                myRes.keepMoney  = myRes.keepMoney -1;
-                                myRes.givenMoney = myRes.givenMoney+1;
-                                displayer.decideScreen(myRes,remaining,decisionMade);
-                                fprintf('keep: %d$ give: %d$\n',myRes.keepMoney, myRes.givenMoney);
-                           end
                        end
                     end
                 end
@@ -213,14 +223,16 @@ try
             displayer.decideScreen(myRes,0,decisionMade);
         end
    
-        %========== Guess1 ===============%
+        %========== Sync money ===============%
         
         if(myRes.youAreDictator)
             cnt.sendMoney(myRes.givenMoney);
         else
-            myRes.givenMoney = cnt.getMoney();
-            myRes.keepMoney = 10-myRes.givenMoney();
+            myRes.keepMoney = cnt.getMoney();
+            myRes.givenMoney = 10-myRes.keepMoney;
         end
+        
+        %========== Guess1 ===============%
         
         myRes.state  = 'guess1';
         startTime = GetSecs();
@@ -261,18 +273,17 @@ try
                                 fprintf('---- MANUALLY STOPPED ----\n');
                                 return;
                            end
-
-                           if strcmp(keyName,'up') && myRes.s2<7
-                                myRes.s2  = myRes.s2+1;
+                           
+                           try
+                              keyName = str2num(keyName);
+                              if keyName >= 1 && keyName <=7
+                                myRes.s2  = keyName;
                                 displayer.decideScreen(myRes,remaining,decisionMade);
                                 fprintf('%d heart(s).\n',myRes.s2);
+                              end 
+                           catch
                            end
                            
-                           if strcmp(keyName,'down') && myRes.s2>1
-                                myRes.s2  = myRes.s2 -1;
-                                displayer.decideScreen(myRes,remaining,decisionMade);
-                                fprintf('%d heart(s).\n',myRes.s2);
-                           end
                        end
                     end
                 end
@@ -314,18 +325,17 @@ try
                                 fprintf('---- MANUALLY STOPPED ----\n');
                                 return;
                            end
-
-                           if strcmp(keyName,'up') && myRes.s1<7
-                                myRes.s1  = myRes.s1+1;
+                           
+                           try
+                              keyName = str2num(keyName);
+                              if keyName >= 1 && keyName <=7
+                                myRes.s1  = keyName;
                                 displayer.decideScreen(myRes,remaining,decisionMade);
                                 fprintf('%d heart(s).\n',myRes.s1);
+                              end 
+                           catch
                            end
                            
-                           if strcmp(keyName,'down') && myRes.s1>1
-                                myRes.s1  = myRes.s1 -1;
-                                displayer.decideScreen(myRes,remaining,decisionMade);
-                                fprintf('%d heart(s).\n',myRes.s1);
-                           end
                        end
                     end
                 end
@@ -385,17 +395,15 @@ try
                                 fprintf('---- MANUALLY STOPPED ----\n');
                                 return;
                            end
-
-                           if strcmp(keyName,'up') && myRes.s3<7
-                                myRes.s3  = myRes.s3+1;
-                                displayer.decideScreen(myRes,remaining,decisionMade);
-                                fprintf('%d heart(s).\n',myRes.s3);
-                           end
                            
-                           if strcmp(keyName,'down') && myRes.s3>1
-                                myRes.s3  = myRes.s3 -1;
+                           try
+                              keyName = str2num(keyName);
+                              if keyName >= 1 && keyName <=7
+                                myRes.s3  = keyName;
                                 displayer.decideScreen(myRes,remaining,decisionMade);
                                 fprintf('%d heart(s).\n',myRes.s3);
+                              end 
+                           catch
                            end
                        end
                     end
@@ -414,6 +422,25 @@ try
         WaitSecs(3);
         displayer.blackScreen();
     end
+    
+    displayer.writeMessage('End of Experiment','Select a number to get your score');
+    WaitSecs(2);
+    
+    spacePressed = FALSE;
+    keyboard.flushKbEvent();
+    randnum = 0;
+    while(~spacePressed)
+        randnum = randi(99);
+        displayer.writeMessage('Press space to stop',num2str(randnum));
+        WaitSecs(0.1);
+        spacePressed = keyboard.detectSpacePress();
+    end
+    
+    displayer.writeMessage('Press space to stop',num2str(randnum));
+    WaitSecs(1);
+    
+    displayer.writeMessage('Your total score',num2str(data.getScoreByKey(randnum)));
+    WaitSecs(5);
 
     displayer.closeScreen();
     ListenChar();
