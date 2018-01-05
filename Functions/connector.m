@@ -45,16 +45,16 @@ classdef connector
             
             if(strcmp(obj.rule,'player1'))
                 sentMessage = strcat(myID,',',oppID);
-                reveivedMessage = strcat(myID,',',oppID);
+                reveivedMessage = strcat(oppID,',',myID);
                 obj.send(sentMessage,-1);
                 fprintf('Sent myID %s to player2.\n',myID);
                 syncResult = obj.fetch(-1);
-                assert(strcmp(syncResult,reveivedMessage));
+                %assert(strcmp(syncResult,reveivedMessage));
                 fprintf('Recieved oppID %s from player2.\n',oppID);
             end
             
             if(strcmp(obj.rule , 'player2'))
-                sentMessage = strcat(oppID,',',myID);
+                sentMessage = strcat(myID,',',oppID);
                 reveivedMessage = strcat(oppID,',',myID);
                 syncResult = obj.fetch(-1);
                 assert(strcmp(syncResult,reveivedMessage));
