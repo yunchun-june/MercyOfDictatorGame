@@ -143,7 +143,9 @@ classdef displayer < handle
                         obj.write('Your money:',1,4,'white',30);
                     end
                     
-                    obj.write(num2str(res.keepMoney),3,4,'white',30);
+                    if(res.keepMoney ~= -1)
+                        obj.write(num2str(res.keepMoney),3,4,'white',30);
+                    end
 
                     %5 Opp's money      2 @
                     if(confirmed)
@@ -152,8 +154,9 @@ classdef displayer < handle
                         obj.write('Opp money:',1,5,'white',30);
                     end
                     
+                    if(res.givenMoney ~= -1)
                     obj.write(num2str(res.givenMoney),3,5,'white',30);
-                    
+                    end
                 else
                     obj.write('Waiting for dictator...',1,4,'white',30);
                 end

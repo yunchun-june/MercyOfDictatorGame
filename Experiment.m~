@@ -114,7 +114,6 @@ try
     
     for trial = 1:totalTrials
 
-        invalid_res = 0;
         %=========== Setting Up Trials ==============%
         %Syncing
         if(trial == 1)
@@ -233,8 +232,13 @@ try
             end
             cnt.sendMoney(myRes.givenMoney);
         else
-            myRes.keepMoney = cnt.getMoney();
-            myRes.givenMoney = 10-myRes.keepMoney;
+            if(myRes.keepMoney ~= -1)
+                myRes.keepMoney = cnt.getMoney();
+                myRes.givenMoney = 10-myRes.keepMoney;
+            else
+                myRes.keepMoney = 9;
+                myRes.givenMoney = 1;
+            end
         end
         
         %========== Guess1 ===============%
