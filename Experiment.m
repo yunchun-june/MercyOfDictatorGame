@@ -1,7 +1,7 @@
 clear all;
 close all;
 clc;
-addpath('./Functions');
+addpath('./MDG_Functions');
 Screen('Preference', 'SkipSyncTests', 1);
 
 try
