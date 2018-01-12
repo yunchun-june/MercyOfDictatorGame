@@ -14,17 +14,19 @@ classdef parser
             thesize = temp(1);
             str = '';
             for i = 1:thesize
-                str = strcat(str,num2str(list(i)),',');
+                str = strcat(str,num2str(list(i,1)),',');
+                str = strcat(str,num2str(list(i,2)),',');
             end
         end
         
-        function condList = strToList(~, str)
+        function condList = strToList(obj, str)
             c = strsplit(str,',');
             temp = size(c);
-            thesize = temp(2)-1;
+            thesize = (temp(2)-1)/2;
             condList = zeros(thesize,1);
             for i = 1:thesize
-                condList(i,1) = str2num(c{i});
+                condList(i,1) = str2num(c{i*2-1});
+                condList(i,2) = str2num(c{i*2});
             end
         end
         
@@ -53,6 +55,10 @@ classdef parser
             str = strcat(str,num2str(res.s1RT),',');
             str = strcat(str,num2str(res.s2RT),',');
             str = strcat(str,num2str(res.s3RT),',');
+            str = strcat(str,num2str(res.allocated),',');
+            str = strcat(str,num2str(res.s1answered),',');
+            str = strcat(str,num2str(res.s2answered),',');
+            str = strcat(str,num2str(res.s3answered),',');
         end
         
         function res = strToRes(obj,str)
@@ -67,6 +73,10 @@ classdef parser
             res.s1RT            = str2double(c{8});
             res.s2RT            = str2double(c{9});
             res.s3RT            = str2double(c{10});
+            res.allocated      = str2double(c{11});
+            res.s1answered            = str2double(c{12});
+            res.s2answered            = str2double(c{13});
+            res.s3answered            = str2double(c{14});
         end
         
        

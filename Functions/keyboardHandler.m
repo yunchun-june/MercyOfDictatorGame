@@ -10,7 +10,8 @@ classdef keyboardHandler < handle
         confirm     = 'space';
         up          = 'UpArrow';
         down        = 'DownArrow';
-        numberKey   = {'1!';'2@';'3#';'4$';'5%';'6^';'7&';'8*';'9('};
+        %numberKey   = {'1!';'2@';'3#';'4$';'5%';'6^';'7&';'8*';'9('};
+        numberKey   = {'a';'s';'d';'f';'g';'h';'j';'k';'l'};
     end
     
     methods

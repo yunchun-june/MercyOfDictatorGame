@@ -100,8 +100,9 @@ classdef displayer < handle
             Screen('Flip',obj.wPtr);
             WaitSecs(time);
         end
-
+        
         function decideScreen(obj,res,timer,confirmed)
+            
             if ~obj.displayerOn return; end
             
             %--------------------------------------
@@ -125,49 +126,53 @@ classdef displayer < handle
 %             res.s2 = 6
 %             res.s3 = 7
 %             res.timer = 5
-            
-            
-            %2 You are @dictator/ #receiver
+
             if res.youAreDictator
                 obj.write('DICTATOR',1,2,'white',30);
             else
                 obj.write('RECEIVER',1,2,'white',30);
             end
             
+            %2 You are @dictator/ #receiver
+
             if(strcmp(res.state,'allocate'))
                 if res.youAreDictator
                     %4 Your money       8 @
-                    if(confirmed)
-                        obj.write('Your money:',1,4,'grey',30);
-                    else
-                        obj.write('Your money:',1,4,'white',30);
-                    end
+                    if(confirmed)   obj.write('Your money:',1,4,'grey',30); end
+                    if(~confirmed)  obj.write('Your money:',1,4,'white',30); end
                     
-                    if(res.keepMoney ~= -1)
-                        obj.write(num2str(res.keepMoney),3,4,'white',30);
-                    end
+                    if(res.keepMoney ~= -1) obj.write(num2str(res.keepMoney),3,4,'white',30); end
 
                     %5 Opp's money      2 @
-                    if(confirmed)
-                        obj.write('Opp money:',1,5,'grey',30);
-                    else
-                        obj.write('Opp money:',1,5,'white',30);
-                    end
+                    if(confirmed) obj.write('Opp money:',1,5,'grey',30); end
+                    if(~confirmed)obj.write('Opp money:',1,5,'white',30); end
                     
-                    if(res.givenMoney ~= -1)
-                    obj.write(num2str(res.givenMoney),3,5,'white',30);
-                    end
+                    if(res.givenMoney ~= -1) obj.write(num2str(res.givenMoney),3,5,'white',30); end
+                    
                 else
                     obj.write('Waiting for dictator...',1,4,'white',30);
                 end
             else
-                %4 Your money       8 @
+                if res.youAreDictator
+                    %4 Your money       8 @
                     obj.write('Your money:',1,4,'grey',30);
-                    obj.write(num2str(res.keepMoney),3,4,'white',30);
+                    
+                    if(res.allocated) obj.write(num2str(res.keepMoney),3,4,'white',30); end
+                    if(~res.allocated) obj.write('Not answered',3,4,'red',30); end
 
-                %5 Opp's money      2 @
+                    %5 Opp's money      2 @
                     obj.write('Opp money:',1,5,'grey',30);
-                    obj.write(num2str(res.givenMoney),3,5,'white',30);
+                    if(res.allocated) obj.write(num2str(res.givenMoney),3,5,'white',30); end
+                    if(~res.allocated) obj.write('Not answered',3,5,'red',30); end
+                    
+                else
+                    %4 Your money       8 @
+                    obj.write('Your money:',1,4,'grey',30);
+                    obj.write(num2str(res.givenMoney),3,4,'white',30);
+                    %5 Opp's money      2 @
+                    obj.write('Opp money:',1,5,'grey',30);
+                    obj.write(num2str(res.keepMoney),3,5,'white',30);
+                end
             end
             
             %6 ----------
@@ -194,22 +199,23 @@ classdef displayer < handle
                 end
             end
             
-            if strcmp(res.state,'guess2')
+            if strcmp(res.state,'guess2') || strcmp(res.state,'delay')
                 if res.youAreDictator
                     %8 Score2 @
                     obj.write('guess given to you:',1,7,'grey',30);
-                    obj.drawHeart(res.s2,3,7);
+                    if(res.s2answered) obj.drawHeart(res.s2,3,7);
+                    else obj.write('Not answered',3,7,'red',30); end
                 else
                     %7 Score1 #
                     obj.write('Give to dictator:',1,7,'grey',30);
-                    obj.drawHeart(res.s1,3,7);
+                    if(res.s1answered) obj.drawHeart(res.s1,3,7);
+                    else obj.write('Not answered',3,7,'red',30); end
                 end
             end
-            
-            
+                      
             if strcmp(res.state,'guess2')
                 if res.youAreDictator
-                    obj.write('Waiting got for receiver...',1,8,'white',30);
+                    obj.write('Waiting for receiver...',1,8,'white',30);
                 else
                 %9 Score3 #
                     if(confirmed)
@@ -218,6 +224,17 @@ classdef displayer < handle
                         obj.write('Guess dictator guess:',1,8,'white',30);
                     end
                     obj.drawHeart(res.s3,3,8);
+                end
+            end
+            
+            
+            if strcmp(res.state,'delay')
+                if res.youAreDictator
+                else
+                %9 Score3 #
+                    obj.write('Guess dictator guess:',1,8,'grey',30);
+                    if res.s3answered obj.drawHeart(res.s3,3,8);
+                    else obj.write('Not answered',3,8,'red',30); end
                 end
             end
             

@@ -30,8 +30,8 @@ classdef dataHandler <handle
         disrupted        = 3
         p1get            = 4
         p2get            = 5
-        p1get_dis        = 6
-        p2get_dis        = 7
+        p1get_ori        = 6
+        p2get_ori        = 7
         score1           = 8  %(given to dictator)
         score2           = 9  %(dictator's guess)
         score3           = 10 %(guess of dictator's guess)
@@ -39,6 +39,10 @@ classdef dataHandler <handle
         s1RT             = 12
         s2RT             = 13
         s3RT             = 14
+        answered_allocate = 15
+        answered_s1 = 16
+        answered_s2 = 17
+        answered_s3 = 18
     end
     
     methods
@@ -55,7 +59,7 @@ classdef dataHandler <handle
             
             obj.rule = rule;
             obj.totalTrial = trials;
-            obj.result = cell(trials,14);
+            obj.result = cell(trials,16);
             
             for i = 1:trials
                 obj.result{i,obj.trial_num} = i;
@@ -66,14 +70,24 @@ classdef dataHandler <handle
         
         function gen_condList(obj)
             trials = obj.totalTrial;
+            disTrialNum = ceil(trials/8);
             temp = zeros(trials,10);
             temp(1:ceil(trials/2), obj.dictator) = 1;
-            temp(ceil(trials/2+1):trials, obj.dictator) = 2;
+            temp(ceil(trials/2)+1:trials, obj.dictator) = 2;
+            
+            %setup disrupted
+            temp(1:trials, obj.disrupted) = 0;
+            temp(1              :disTrialNum,   obj.disrupted) = 2;
+            temp(disTrialNum+1  :2*disTrialNum, obj.disrupted) = -2;
+            
+            temp(ceil(trials/2)+1               :ceil(trials/2)+disTrialNum,    obj.disrupted) = 2;
+            temp(ceil(trials/2)+disTrialNum+1 :ceil(trials/2)+disTrialNum*2,  obj.disrupted) = -2;
 
             randomIndex = randperm(trials);
             index = 1;
             for i = randomIndex
                 obj.result{index,obj.dictator} = temp(i,obj.dictator);
+                obj.result{index,obj.disrupted} = temp(i,obj.disrupted);
                 index = index +1;
             end
         end
@@ -81,15 +95,17 @@ classdef dataHandler <handle
         %----- generate condition list -----%
         
         function condList = get_condList(obj)
-            condList = zeros(obj.totalTrial,1);
+            condList = zeros(obj.totalTrial,2);
             for i = 1:obj.totalTrial
                 condList(i,1) = obj.result{i,obj.dictator};
+                condList(i,2) = obj.result{i,obj.disrupted};
             end
         end
         
         function set_condList(obj,condList)
             for i = 1:obj.totalTrial
-                obj.result{i,obj.dictator} = condList(i);
+                obj.result{i,obj.dictator} = condList(i,1);
+                obj.result{i,obj.disrupted} = condList(i,2);
             end
         end
         
@@ -100,6 +116,10 @@ classdef dataHandler <handle
             dictator = obj.result{trial,obj.dictator};
             if(dictator == 1) res = 'player1'; end
             if(dictator == 2) res = 'player2'; end
+        end
+        
+        function dis = getDisrupt(obj,trial)
+            dis = obj.result{trial,obj.disrupted};
         end
         
         function updateData(obj,myRes,oppRes,trial)
@@ -122,11 +142,15 @@ classdef dataHandler <handle
                 if(strcmp(obj.rule,'player1'))
                     obj.result{trial,obj.p1get} = myRes.keepMoney;
                     obj.result{trial,obj.p2get} = myRes.givenMoney;
+                    obj.result{trial,obj.p1get_ori} = myRes.keepMoney_ori;
+                    obj.result{trial,obj.p2get_ori} = myRes.givenMoney_ori;
                 end
                                 
                 if(strcmp(obj.rule,'player2'))
                     obj.result{trial,obj.p2get} = myRes.keepMoney;
                     obj.result{trial,obj.p1get} = myRes.givenMoney;
+                    obj.result{trial,obj.p2get_ori} = myRes.keepMoney_ori;
+                    obj.result{trial,obj.p1get_ori} = myRes.givenMoney_ori;
                 end
                 
                 obj.result{trial,obj.score1} = oppRes.s1;
@@ -138,16 +162,26 @@ classdef dataHandler <handle
                 obj.result{trial,obj.s2RT} = myRes.s2RT;
                 obj.result{trial,obj.s3RT} = oppRes.s3RT;
                 
+                obj.result{trial,obj.answered_allocate} = myRes.allocated;
+                obj.result{trial,obj.answered_s1} = oppRes.s1answered;
+                obj.result{trial,obj.answered_s2} = myRes.s2answered;
+                obj.result{trial,obj.answered_s3} = oppRes.s3answered;
+                
             end
             
             if(~myRes.youAreDictator)
                 if(strcmp(obj.rule,'player1'))
                     obj.result{trial,obj.p2get} = myRes.keepMoney;
                     obj.result{trial,obj.p1get} = myRes.givenMoney;
+                    obj.result{trial,obj.p2get_ori} = myRes.keepMoney_ori;
+                    obj.result{trial,obj.p1get_ori} = myRes.givenMoney_ori;
                 end
+                
                 if(strcmp(obj.rule,'player2'))
                     obj.result{trial,obj.p1get} = myRes.keepMoney;
                     obj.result{trial,obj.p2get} = myRes.givenMoney;
+                    obj.result{trial,obj.p1get_ori} = myRes.keepMoney_ori;
+                    obj.result{trial,obj.p2get_ori} = myRes.givenMoney_ori;
                 end
                 
                 obj.result{trial,obj.score1} = myRes.s1;
@@ -158,8 +192,12 @@ classdef dataHandler <handle
                 obj.result{trial,obj.s1RT} = myRes.s1RT;
                 obj.result{trial,obj.s2RT} = oppRes.s2RT;
                 obj.result{trial,obj.s3RT} = myRes.s3RT;
+                
+                obj.result{trial,obj.answered_allocate} = oppRes.allocated;
+                obj.result{trial,obj.answered_s1} = myRes.s1answered;
+                obj.result{trial,obj.answered_s2} = oppRes.s2answered;
+                obj.result{trial,obj.answered_s3} = myRes.s3answered;
             end
-            
         end
         
         function data = getResult(obj,trial)
@@ -237,8 +275,7 @@ classdef dataHandler <handle
             end
         end
         
-        
-        
+
         %----- Writing and Loading -----%
         function saveToFile(obj)
             result = obj.result;

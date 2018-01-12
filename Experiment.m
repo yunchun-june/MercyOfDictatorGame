@@ -10,10 +10,10 @@ try
     totalTrials         = 10;
     practiceTrials      = 15;
     
-    allocateTime        = 6;
-    guessTime1          = 6;
-    guessTime2          = 6;
-    showResultTime      = 5;
+    allocateTime        = 5;
+    guessTime1          = 5;
+    guessTime2          = 5;
+    showResultTime      = 2;
     fixationTime        = 1;
     
     %===== Constants =====%
@@ -21,20 +21,23 @@ try
     FALSE               = 0;
     
     %===== IP Config for developing ===%
-    myID = 'test';
-    oppID = 'test';
+    
     myIP = 'localhost';
     oppIP = 'localhost';
 
     rule = input('Rule(player1/player2): ','s');
     assert( strcmp(rule,'player1')|strcmp(rule,'player2'));
     if strcmp(rule,'player1')
+        myID = 'test_player1';
+        oppID = 'test_player2';
         %myIP = '192.168.1.83';
         %oppIP = '192.168.1.42';
         myPort = 5656;
         oppPort = 7878;
     end
     if(strcmp(rule,'player2'))
+        myID = 'test_player2';
+        oppID = 'test_player1';
         %myIP = '192.168.1.42';
         %oppIP = '192.168.1.83';
         myPort = 7878;
@@ -63,10 +66,9 @@ try
     inputDeviceName     = 'Mac';
     screenID            = 0;
     
-    if(strcmp(rule,'player1')) displayerOn = TRUE; end
+    if(strcmp(rule,'player1')) displayerOn = FALSE; end
     if(strcmp(rule,'player2')) displayerOn = FALSE; end
     automode = FALSE;
-    
     
     %===== Initialize Componets =====%
     keyboard    = keyboardHandler(inputDeviceName);
@@ -77,8 +79,10 @@ try
     %===== Establish Connection =====% 
     cnt = connector(rule,myID, oppID,myIP,myPort,oppIP,oppPort);
     cnt.establish(myID,oppID);
-    ListenChar(2);
-    HideCursor();
+    if displayerOn
+        ListenChar(2);
+        HideCursor();
+    end
     
     %===== Open Screen =====% 
     fprintf('Start after 10 seconds\n');
@@ -128,17 +132,22 @@ try
         
         %display respond package
         myRes.youAreDictator = strcmp(rule,data.getDictator(trial));
-        myRes.keepMoney  = -1;
-        myRes.givenMoney = -1;
-        myRes.s1 = 0;
-        myRes.s2 = 0;
-        myRes.s3 = 0;
-        
-        %data handler respond package
-        myRes.allocateRT = 0;
-        myRes.s1RT = 0;
-        myRes.s2RT = 0;
-        myRes.s3RT = 0;
+        myRes.keepMoney_ori     = -1;
+        myRes.givenMoney_ori    = -1;
+        myRes.keepMoney         = -1;
+        myRes.givenMoney        = -1;
+        myRes.disrupt           = data.getDisrupt(trial);
+        myRes.s1                = -1;
+        myRes.s2                = -1;
+        myRes.s3                = -1;
+        myRes.allocated         = FALSE;
+        myRes.s1answered        = FALSE;
+        myRes.s2answered        = FALSE;
+        myRes.s3answered        = FALSE;
+        myRes.allocateRT        = 0;
+        myRes.s1RT              = 0;
+        myRes.s2RT              = 0;
+        myRes.s3RT              = 0;
         
         %=========== Fixation ==============%
         displayer.fixation(fixationTime);
@@ -168,19 +177,16 @@ try
                 displayer.decideScreen(myRes,remaining,decisionMade);
                 while(GetSecs()<endOfThisSecond)
                     if ~decisionMade
-                        
                        if(automode)
                            keyName = action{randi(4)};
                            timing = 3;
-                       else
-                           [keyName,timing] = keyboard.getResponse(endOfThisSecond);
-                       end
+                       else [keyName,timing] = keyboard.getResponse(endOfThisSecond); end
                        
-                       if(strcmp(keyName,'na'))
-                           continue;
+                       if(strcmp(keyName,'na')) continue;
                        else
                            if(strcmp(keyName,'confirm') && myRes.keepMoney ~= -1)
                                 myRes.allocateRT = timing;
+                                myRes.allocated = TRUE;
                                 decisionMade = TRUE;
                                 fprintf('confirmed: keep %d$ give %d$\n',myRes.keepMoney);
                                 displayer.decideScreen(myRes,remaining,decisionMade);
@@ -201,9 +207,7 @@ try
                                 displayer.decideScreen(myRes,remaining,decisionMade);
                                 fprintf('keep: %d$ give: %d$\n',myRes.keepMoney, myRes.givenMoney);
                               end 
-                           catch
-                           end
-                           
+                           catch end
                        end
                     end
                 end
@@ -231,11 +235,19 @@ try
                 myRes.keepMoney = 1;
                 myRes.givenMoney = 9;
             end
-            cnt.sendMoney(myRes.givenMoney);
+            
+            myRes.keepMoney_ori = myRes.keepMoney;
+            myRes.givenMoney_ori = myRes.givenMoney;
+            cnt.sendMoney(myRes.keepMoney_ori);
         else
-            myRes.keepMoney = cnt.getMoney();
-            myRes.givenMoney = 10-myRes.keepMoney;
+            myRes.keepMoney_ori = cnt.getMoney();
+            myRes.givenMoney_ori = 10-myRes.keepMoney_ori;
         end
+        
+        myRes.keepMoney = myRes.keepMoney_ori + myRes.disrupt;
+        if(myRes.keepMoney >9) myRes.keepMoney = 9; end
+        if(myRes.keepMoney <1) myRes.keepMoney = 1; end
+        myRes.givenMoney = 10-myRes.keepMoney;
         
         %========== Guess1 ===============%
         
@@ -268,6 +280,7 @@ try
                            if(strcmp(keyName,'confirm'))
                                 myRes.s2RT= timing;
                                 decisionMade = TRUE;
+                                myRes.s2answered = TRUE;
                                 fprintf('confirmed: you guess %d heart(s)\n',myRes.s2);
                                 displayer.decideScreen(myRes,remaining,decisionMade);
                            end
@@ -320,6 +333,7 @@ try
                            if(strcmp(keyName,'confirm'))
                                 myRes.s1RT= timing;
                                 decisionMade = TRUE;
+                                myRes.s1answered = TRUE;
                                 fprintf('confirmed: you give %d heart(s)\n',myRes.s1);
                                 displayer.decideScreen(myRes,remaining,decisionMade);
                            end
@@ -390,6 +404,7 @@ try
                            if(strcmp(keyName,'confirm'))
                                 myRes.s3RT= timing;
                                 decisionMade = TRUE;
+                                myRes.s3answered = TRUE;
                                 fprintf('confirmed : you guess %d heart(s).\n',myRes.s3);
                                 displayer.decideScreen(myRes,remaining,decisionMade);
                            end
@@ -416,7 +431,13 @@ try
             end
             displayer.decideScreen(myRes,0,decisionMade);
         end
-  
+        
+        myRes.state  = 'delay';
+        endTime = GetSecs()+showResultTime;
+        while GetSecs() < endTime
+            displayer.decideScreen(myRes,0,TRUE);
+        end
+        
         %========== Exchange and Save Data ===============%
         %Get opponent's response
         oppResRaw = cnt.sendOwnResAndgetOppRes(parser.resToStr(myRes));
@@ -428,7 +449,6 @@ try
         displayer.blackScreen();
     end
     
-
     displayer.closeScreen();
     ListenChar();
     data.saveToFile();
