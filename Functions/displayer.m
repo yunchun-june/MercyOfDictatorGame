@@ -126,11 +126,14 @@ classdef displayer < handle
 %             res.s2 = 6
 %             res.s3 = 7
 %             res.timer = 5
-
+    
+            invalid = 0;
             if res.youAreDictator
                 obj.write('DICTATOR',1,2,'white',30);
+                if(~res.allocated || ~res.s2answered) invalid = 1; end
             else
                 obj.write('RECEIVER',1,2,'white',30);
+                if(~res.s1answered || ~res.s3answered) invalid = 1; end
             end
             
             %2 You are @dictator/ #receiver
@@ -236,6 +239,7 @@ classdef displayer < handle
                     if res.s3answered obj.drawHeart(res.s3,3,8);
                     else obj.write('Not answered',3,8,'red',30); end
                 end
+                if invalid obj.write('Please make respond in time',3,9,'red',30); end
             end
             
             %10      timer

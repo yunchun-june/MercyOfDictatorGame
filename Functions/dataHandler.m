@@ -1,20 +1,5 @@
 classdef dataHandler <handle
 
-%   columns         index
-%   trials          1
-%   dictator        2
-%   disrupted       3
-%   p1get           4
-%   p2get           5
-%   p1get_dis       6
-%   p2get_dis       7
-%   score1          8  (given to dictator)
-%   score2          9  (dictator's guess)
-%   score3          10 (guess of dictator's guess)
-%   allocate_rt
-%   score1_rt
-%   score2_rt
-%   score3_rt
     
 
     properties
@@ -23,26 +8,30 @@ classdef dataHandler <handle
         rule
         totalTrial
         result
+        total_point
+        penalty
+        payoff
         
         %columns        index
-        trial_num        = 1
-        dictator         = 2
-        disrupted        = 3
-        p1get            = 4
-        p2get            = 5
-        p1get_ori        = 6
-        p2get_ori        = 7
-        score1           = 8  %(given to dictator)
-        score2           = 9  %(dictator's guess)
-        score3           = 10 %(guess of dictator's guess)
-        allocateRT       = 11
-        s1RT             = 12
-        s2RT             = 13
-        s3RT             = 14
-        answered_allocate = 15
-        answered_s1 = 16
-        answered_s2 = 17
-        answered_s3 = 18
+        total_col           =18
+        trial_num           = 1
+        dictator            = 2
+        disrupted           = 3
+        p1get               = 4
+        p2get               = 5
+        p1get_ori           = 6
+        p2get_ori           = 7
+        score1              = 8  %(given to dictator)
+        score2              = 9  %(dictator's guess)
+        score3              = 10 %(guess of dictator's guess)
+        allocateRT          = 11
+        s1RT                = 12
+        s2RT                = 13
+        s3RT                = 14
+        answered_allocate   = 15
+        answered_s1         = 16
+        answered_s2         = 17
+        answered_s3         = 18
     end
     
     methods
@@ -59,7 +48,7 @@ classdef dataHandler <handle
             
             obj.rule = rule;
             obj.totalTrial = trials;
-            obj.result = cell(trials,16);
+            obj.result = cell(trials,obj.total_col);
             
             for i = 1:trials
                 obj.result{i,obj.trial_num} = i;
@@ -275,7 +264,62 @@ classdef dataHandler <handle
             end
         end
         
+        function calculate_score(obj)
+            total_point    = 0;
+            total_gain     = 0;
+            penalty        = 0;
+            
+            if(strcmp(obj.rule,'player1')) playerRule = 1; end
+            if(strcmp(obj.rule,'player2')) playerRule = 2; end
+            
+            for trial = 1:obj.totalTrial
+                if(playerRule == 1)
+                    total_gain = total_gain + obj.result{trial,obj.p1get};
+                end
+                
+                if(playerRule == 2)
+                    total_gain = total_gain + obj.result{trial,obj.p2get};
+                end
 
+                if(playerRule == obj.result{trial,obj.dictator}) %dictator
+                    if(~obj.result{trial,obj.answered_s1}) continue; end
+                    if(obj.result{trial,obj.answered_s2})
+                        if(obj.result{trial,obj.score2} == obj.result{trial,obj.score1})
+                            total_point = total_point+1;
+                        end
+                    else penalty = penalty+1; end
+                end
+
+                if(playerRule ~= obj.result{trial,obj.dictator} ) %receiver
+                    if(~obj.result{trial,obj.answered_s2}) continue; end
+                    if(obj.result{trial,obj.answered_s1} & obj.result{trial,obj.answered_s3})
+                        if(obj.result{trial,obj.score3} == obj.result{trial,obj.score2})
+                            total_point = total_point+2;
+                        end
+                    else penalty = penalty+1; end
+                end
+            end
+            
+            obj.total_point = total_point;
+            obj.penalty     = penalty;
+            obj.payoff      = total_gain/obj.totalTrial * (obj.total_point-obj.penalty);
+        end
+    
+        function gen_random_result(obj)
+            for trial = 1: obj.totalTrial
+                obj.result{trial,obj.p1get} = randi(9);
+                obj.result{trial,obj.p2get} = 10-obj.result{trial,obj.p1get};
+                obj.result{trial,obj.score1} = randi(7);
+                obj.result{trial,obj.score2} = randi(7);
+                obj.result{trial,obj.score3} = randi(7);
+                obj.result{trial,obj.answered_allocate} = 1;
+                obj.result{trial,obj.answered_s1} = 1;
+                obj.result{trial,obj.answered_s2} = 1;
+                obj.result{trial,obj.answered_s3} = 1;
+
+            end
+        end
+        
         %----- Writing and Loading -----%
         function saveToFile(obj)
             result = obj.result;

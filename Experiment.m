@@ -1,7 +1,7 @@
 clear all;
 close all;
 clc;
-addpath('./MDG_Functions');
+addpath('./Functions');
 Screen('Preference', 'SkipSyncTests', 1);
 
 try
@@ -66,7 +66,7 @@ try
     inputDeviceName     = 'Mac';
     screenID            = 0;
     
-    if(strcmp(rule,'player1')) displayerOn = FALSE; end
+    if(strcmp(rule,'player1')) displayerOn = TRUE; end
     if(strcmp(rule,'player2')) displayerOn = FALSE; end
     automode = FALSE;
     
@@ -231,7 +231,7 @@ try
         %========== Sync money ===============%
         
         if(myRes.youAreDictator)
-            if(myRes.keepMoney == -1)
+            if(~myRes.allocated)
                 myRes.keepMoney = 1;
                 myRes.givenMoney = 9;
             end
