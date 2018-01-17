@@ -17,16 +17,7 @@ classdef keyboardHandler < handle
     methods
         
         %---- Constructor -----%
-        function obj = keyboardHandler(keyboardName)
-            if strcmp(keyboardName,'Mac')
-               keyboardName = 'Apple Internal Keyboard / Trackpad';
-            end
-            if strcmp(keyboardName,'Wireless')
-                keyboardName = 'USB Receiver';
-            end
-            if strcmp(keyboardName,'USB')
-                keyboardName = 'USB Keyboard';
-            end
+        function obj = keyboardHandler()
             
             obj.dev=PsychHID('Devices');
             obj.devInd = find(strcmpi('Keyboard', {obj.dev.usageName}) );
@@ -54,16 +45,6 @@ classdef keyboardHandler < handle
 
                 if press(KbName(obj.confirm))
                     keyName = 'confirm';
-                    timing = GetSecs();
-                end
-                
-                if press(KbName(obj.up))
-                    keyName = 'up';
-                    timing = GetSecs();
-                end
-                
-                if press(KbName(obj.down))
-                    keyName = 'down';
                     timing = GetSecs();
                 end
                 
@@ -114,8 +95,6 @@ classdef keyboardHandler < handle
                 end
             end
         end
-        
-
         
     end
     

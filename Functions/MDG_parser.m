@@ -1,4 +1,4 @@
-classdef parser
+classdef MDG_parser
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -6,7 +6,7 @@ classdef parser
     end
     
     methods
-        function obj = parser()
+        function obj = MDG_parser()
         end
         
         function str = listToStr(obj, list)

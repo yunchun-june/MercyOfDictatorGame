@@ -67,8 +67,6 @@ classdef connector
             fprintf('-----------------------------\n');
         end
         
-        
-
         function syncTrial(obj,trial)
             if strcmp(obj.rule , 'player1')
                 obj.send(num2str(trial),-1);

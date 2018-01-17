@@ -1,4 +1,4 @@
-classdef dataHandler <handle
+classdef MDG_dataHandler <handle
 
     
 
@@ -37,7 +37,7 @@ classdef dataHandler <handle
     methods
         
         %-----Constructor-----%
-        function obj = dataHandler(ID1,ID2,rule,trials)
+        function obj = MDG_dataHandler(ID1,ID2,rule,trials)
             if strcmp(rule,'player1')
                 obj.player1ID = ID1;
                 obj.player2ID = ID2;
